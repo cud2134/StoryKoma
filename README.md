@@ -3,9 +3,6 @@
 Pagina de **lectura de manga online** y **recomendacion de compra de manga fisico**.
 Hecha con Node.js + Express + MVC + EJS + MySQL.
 
-
-wewewewewewewewewewe
-
 ## Estructura (MVC)
 
 ```
