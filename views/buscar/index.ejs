@@ -1,0 +1,80 @@
+<%- include('../partials/head', { bodyClass: 'pagina-buscar' }) %>
+<%- include('../partials/nav') %>
+<main class="contenedor-pagina">
+<%- include('../partials/flash') %>
+<%- include('../partials/anuncio') %>
+<%
+  const _hayFiltros = filtros.q || filtros.estados.length || filtros.tipos.length || filtros.generos.length || filtros.contenido !== 'todos';
+  const _qs = (extra) => {
+    const p = new URLSearchParams();
+    if (filtros.q) p.set('q', filtros.q);
+    filtros.estados.forEach((e) => p.append('estado', e));
+    filtros.tipos.forEach((t) => p.append('tipo', t));
+    filtros.generos.forEach((g) => p.append('genero', g));
+    if (filtros.contenido !== 'todos') p.set('contenido', filtros.contenido);
+    Object.entries(extra || {}).forEach(([k, v]) => p.set(k, v));
+    return p.toString();
+  };
+%>
+<form method="GET" action="/buscar" id="form-buscar" class="barra-buscador">
+  <div class="fila-busqueda">
+    <input type="search" name="q" class="input-buscar" placeholder="Buscar manga por titulo..." value="<%= filtros.q %>" autofocus>
+    <button type="submit" class="btn-accion-principal">Buscar</button>
+    <button type="button" class="btn-icono-nav" data-tema-toggle title="Cambiar tema (claro / oscuro)" aria-label="Cambiar tema"><i class="ri-moon-line icono-remix" aria-hidden="true"></i></button>
+    <% if (!user.esAdmin) { %><a href="/premium" class="btn-premium-nav<%= user.premiumActivo ? ' activo' : '' %>"><i class="ri-vip-crown-line icono-remix" aria-hidden="true"></i> Premium</a><% } %>
+    <a href="/notificaciones" class="btn-icono-nav" title="Notificaciones" aria-label="Notificaciones"><i class="ri-notification-3-line icono-remix" aria-hidden="true"></i><% if (notificacionesSinLeer > 0) { %><span class="punto-notif"><%= notificacionesSinLeer %></span><% } %></a>
+  </div>
+
+  <!-- Tres desplegables: estado, tipo y generos -->
+  <div class="fila-filtros">
+    <details class="filtro-desplegable">
+      <summary>Estado <% if (filtros.estados.length) { %><b>(<%= filtros.estados.length %>)</b><% } %></summary>
+      <div class="filtro-opciones">
+        <% opciones.estados.forEach((e) => { %><label><input type="checkbox" name="estado" value="<%= e %>" <%= filtros.estados.includes(e) ? 'checked' : '' %>> <%= e %></label><% }) %>
+      </div>
+    </details>
+    <details class="filtro-desplegable">
+      <summary>Tipo <% if (filtros.tipos.length) { %><b>(<%= filtros.tipos.length %>)</b><% } %></summary>
+      <div class="filtro-opciones">
+        <% opciones.tipos.forEach((t) => { %><label><input type="checkbox" name="tipo" value="<%= t %>" <%= filtros.tipos.includes(t) ? 'checked' : '' %>> <%= t %></label><% }) %>
+      </div>
+    </details>
+    <details class="filtro-desplegable">
+      <summary>Generos <% if (filtros.generos.length) { %><b>(<%= filtros.generos.length %>)</b><% } %></summary>
+      <div class="filtro-opciones filtro-generos">
+        <% opciones.generos.forEach((g) => { %><label><input type="checkbox" name="genero" value="<%= g.id %>" <%= filtros.generos.includes(g.id) ? 'checked' : '' %>> <%= g.nombre %></label><% }) %>
+      </div>
+    </details>
+    <% if (user.esAdulto) { %>
+      <details class="filtro-desplegable">
+        <summary>Contenido <% if (filtros.contenido !== 'todos') { %><b>(1)</b><% } %></summary>
+        <div class="filtro-opciones">
+          <label><input type="radio" name="contenido" value="todos" <%= filtros.contenido === 'todos' ? 'checked' : '' %>> Todo</label>
+          <label><input type="radio" name="contenido" value="no" <%= filtros.contenido === 'no' ? 'checked' : '' %>> Solo apto para todos</label>
+          <label><input type="radio" name="contenido" value="si" <%= filtros.contenido === 'si' ? 'checked' : '' %>> Solo +18</label>
+        </div>
+      </details>
+    <% } %>
+    <% if (_hayFiltros) { %><a href="/buscar" class="btn-limpiar-filtros">Limpiar filtros</a><% } %>
+  </div>
+</form>
+
+<h2 class="titulo-categoria"><%= _hayFiltros ? 'Resultados' : 'Todos los mangas' %> <small class="contador-resultados">(<%= total %>)</small></h2>
+<% if (!mangas.length) { %>
+  <p class="mensaje-vacio">No encontramos mangas con esos filtros. Prueba quitando alguno.</p>
+<% } else { %>
+  <div class="grilla-mangas">
+    <% mangas.forEach((manga) => { %><%- include('../partials/tarjeta', { manga }) %><% }) %>
+  </div>
+  <% if (paginas > 1) { %>
+    <nav class="paginacion">
+      <% if (pagina > 1) { %><a href="/buscar?<%= _qs({ pagina: pagina - 1 }) %>">← Anterior</a><% } %>
+      <span>Pagina <%= pagina %> de <%= paginas %></span>
+      <% if (pagina < paginas) { %><a href="/buscar?<%= _qs({ pagina: pagina + 1 }) %>">Siguiente →</a><% } %>
+    </nav>
+  <% } %>
+<% } %>
+</main>
+<%- include('../partials/scripts') %>
+</body>
+</html>

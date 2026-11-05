@@ -1,0 +1,46 @@
+<%- include('../partials/head') %>
+<%- include('../partials/nav', { zona: zona }) %>
+<div class="vista-plataforma">
+  <section id="banner-dinamico" class="banner-destacado<%= zona === 'adulto' ? ' banner-adulto' : '' %>"
+           data-portada="<%= banners.length ? urlCss(banners[0].portada) : '' %>">
+    <div class="contenido-banner">
+      <span class="etiqueta-destacada<%= zona === 'adulto' ? ' etiqueta-adulto' : '' %>"><%= zona === 'adulto' ? 'ZONA +18' : 'MANGAS MAS VISTOS' %></span>
+      <% if (banners.length) { %>
+        <h1 id="banner-titulo" class="titulo-manga-destacado"><%= banners[0].titulo %></h1>
+        <p id="banner-sinopsis" class="sinopsis-destacada"><%= banners[0].descripcion || 'Sin sinopsis disponible.' %></p>
+        <div class="botones-banner">
+          <a id="banner-boton" class="btn-reproducir" href="/mangas/<%= banners[0].id %>">Leer ahora</a>
+          <a id="banner-info" class="btn-info" href="/mangas/<%= banners[0].id %>">Mas info</a>
+        </div>
+      <% } else { %>
+        <h1 class="titulo-manga-destacado"><%= zona === 'adulto' ? 'Zona +18' : 'StoryKoma' %></h1>
+        <p class="sinopsis-destacada">Todavia no hay mangas para mostrar en esta seccion.</p>
+      <% } %>
+    </div>
+  </section>
+  <script>
+    const bannerPortada = document.getElementById('banner-dinamico').dataset.portada;
+    if (bannerPortada) {
+      document.getElementById('banner-dinamico').style.backgroundImage =
+        "linear-gradient(to right, rgba(8,8,8,.95) 30%, rgba(8,8,8,.25)), url('" + bannerPortada + "')";
+    }
+  </script>
+  <script type="application/json" id="datos-banners"><%- json(banners.map((b) => ({ id: b.id, titulo: b.titulo, descripcion: b.descripcion, portada: b.portada }))) %></script>
+
+  <div class="contenedor-plataforma<%= zona === 'adulto' ? ' contenedor-adulto' : '' %>">
+    <%- include('../partials/flash') %>
+    <%- include('../partials/anuncio') %>
+    <% filas.forEach((fila) => { %>
+      <section class="fila-mangas">
+        <h2 class="titulo-categoria<%= zona === 'adulto' ? ' titulo-adulto' : '' %>"><%= fila.titulo %></h2>
+        <div class="carrusel-mangas">
+          <% if (!fila.mangas.length) { %><p class="mensaje-vacio">No hay mangas disponibles en esta seccion.</p><% } %>
+          <% fila.mangas.forEach((manga) => { %><%- include('../partials/tarjeta', { manga }) %><% }) %>
+        </div>
+      </section>
+    <% }) %>
+  </div>
+</div>
+<%- include('../partials/scripts') %>
+</body>
+</html>

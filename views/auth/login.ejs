@@ -1,0 +1,141 @@
+<%- include('../partials/head', { bodyClass: 'pagina-login' }) %>
+<div class="netflix-bg" aria-hidden="true"></div>
+<div class="fondo-animado-mangas" id="wallpaper-container" aria-hidden="true">
+    <% portadasFondo.slice(0, 15).forEach((portada) => { %>
+      <div class="manga-card"><img src="<%= portada %>" alt="" loading="eager"></div>
+    <% }) %>
+</div>
+<script type="application/json" id="datos-portadas-fondo"><%- json(portadasFondo) %></script>
+<div class="pantalla-fondo">
+  <div class="tarjeta-interfaz">
+    <h2 class="logo-app">Story<span>Koma</span></h2>
+
+    <% if (flash) { %><div class="aviso <%= flash.tipo === 'error' ? 'aviso-error' : 'aviso-ok' %>"><%= flash.texto %></div><% } %>
+    <% if (error) { %><div class="aviso aviso-error"><%= error %></div><% } %>
+
+    <!-- 1. Bienvenida: iniciar, registrarse, Google -->
+    <div class="seccion<%= vista === 'bienvenida' ? ' activa' : '' %>" data-vista="bienvenida">
+      <button type="button" class="btn-morado" data-ir="login">Iniciar sesion</button>
+      <button type="button" class="btn-blanco" data-ir="registro">Registrarse</button>
+      <button type="button" class="btn-google" data-ir="google">Iniciar con Google</button>
+    </div>
+
+    <!-- 2. Iniciar sesion -->
+    <div class="seccion<%= vista === 'login' ? ' activa' : '' %>" data-vista="login">
+      <h3>Ingresar</h3>
+      <form method="POST" action="/login">
+        <div class="campo">
+          <label for="login-identificador">Usuario o correo</label>
+          <input id="login-identificador" name="identificador" type="text" required placeholder="tu@correo.com o usuario" value="<%= valores.identificador || '' %>">
+        </div>
+        <div class="campo">
+          <label for="login-password">Contrasena</label>
+          <div class="campo-contrasena">
+            <input id="login-password" name="contrasena" type="password" required placeholder="********">
+            <button type="button" class="btn-ver-contrasena" data-toggle-password aria-label="Mostrar contrasena" aria-pressed="false">
+              <i class="ri-eye-line" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="btn-morado">Entrar</button>
+        <button type="button" class="btn-blanco" data-ir="bienvenida">Volver</button>
+      </form>
+    </div>
+
+    <!-- 3. Registro: datos y luego tipo de cuenta -->
+    <div class="seccion<%= vista === 'registro' ? ' activa' : '' %>" data-vista="registro">
+      <h3>Crear cuenta</h3>
+      <form method="POST" action="/registro" id="form-registro">
+        <div data-paso="datos">
+          <div class="campo">
+            <label for="registro-usuario">Nombre de usuario</label>
+            <input id="registro-usuario" name="username" type="text" required minlength="4" maxlength="20" pattern="[A-Za-z0-9_.-]{4,20}" placeholder="Ej: Naruto_20" value="<%= valores.username || '' %>">
+          </div>
+          <div class="campo">
+            <label for="registro-email">Correo electronico</label>
+            <input id="registro-email" name="correo" type="email" required maxlength="100" placeholder="tu@correo.com" value="<%= valores.correo || '' %>">
+          </div>
+          <div class="campo">
+            <label for="registro-fecha">Fecha de nacimiento</label>
+            <input id="registro-fecha" name="fecha_nacimiento" type="date" required min="<%= fechaNacimientoMinima() %>" max="<%= fechaNacimientoMaxima() %>" value="<%= valores.fecha_nacimiento || '' %>">
+          </div>
+          <div class="campo">
+            <label for="pass1">Contrasena</label>
+            <div class="campo-contrasena">
+              <input id="pass1" name="contrasena" type="password" required minlength="6" pattern="(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9\s]).{6,}" title="Incluye al menos una mayuscula, un numero y un simbolo especial." placeholder="Minimo 6 caracteres, mayuscula, numero y simbolo">
+              <button type="button" class="btn-ver-contrasena" data-toggle-password aria-label="Mostrar contrasena" aria-pressed="false">
+                <i class="ri-eye-line" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+          <div class="campo">
+            <label for="pass2">Confirmar contrasena</label>
+            <div class="campo-contrasena">
+              <input id="pass2" name="confirmar" type="password" required minlength="6" pattern="(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9\s]).{6,}" title="Incluye al menos una mayuscula, un numero y un simbolo especial." placeholder="Repite tu contrasena">
+              <button type="button" class="btn-ver-contrasena" data-toggle-password aria-label="Mostrar contrasena" aria-pressed="false">
+                <i class="ri-eye-line" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+          <button type="button" class="btn-morado" id="btn-continuar-registro">Continuar</button>
+          <button type="button" class="btn-blanco" data-ir="bienvenida">Volver</button>
+        </div>
+
+        <div data-paso="rol" hidden>
+          <p class="subtexto">¿Que deseas hacer en StoryKoma? Un administrador puede cambiarlo despues.</p>
+          <div class="contenedor-roles">
+            <label class="btn-rol">
+              <input type="radio" name="rol" value="Lector" <%= (valores.rol || 'Lector') === 'Lector' ? 'checked' : '' %>>
+              <span class="rol-indicador lector">L</span><span>Lector</span>
+              <small>Lee, comenta y guarda</small>
+            </label>
+            <label class="btn-rol">
+              <input type="radio" name="rol" value="Creador" <%= valores.rol === 'Creador' ? 'checked' : '' %>>
+              <span class="rol-indicador creador">C</span><span>Creador</span>
+              <small>Ademas publica mangas</small>
+            </label>
+          </div>
+          <button type="submit" class="btn-morado">Crear mi cuenta</button>
+          <button type="button" class="btn-blanco" id="btn-volver-datos">Volver</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Verificacion de correo con codigo -->
+    <div class="seccion<%= vista === 'verificar' ? ' activa' : '' %>" data-vista="verificar">
+      <h3>Verifica tu correo</h3>
+      <p class="subtexto">Si la cuenta sigue pendiente, enviamos un codigo de 6 digitos a <strong><%= valores.correo || '' %></strong>. Ingresalo para activar tu cuenta; vence en 15 minutos y permite 5 intentos.</p>
+      <form method="POST" action="/verificar-correo">
+        <input type="hidden" name="correo" value="<%= valores.correo || '' %>">
+        <div class="campo">
+          <label for="codigo-verificacion">Codigo de verificacion</label>
+          <input id="codigo-verificacion" name="codigo" type="text" inputmode="numeric" autocomplete="one-time-code" required minlength="6" maxlength="6" pattern="[0-9]{6}" placeholder="000000">
+        </div>
+        <button type="submit" class="btn-morado">Verificar correo</button>
+      </form>
+      <form method="POST" action="/verificar-correo/reenviar">
+        <input type="hidden" name="correo" value="<%= valores.correo || '' %>">
+        <button type="submit" class="btn-blanco">Reenviar codigo</button>
+      </form>
+      <button type="button" class="btn-blanco" data-ir="bienvenida">Volver</button>
+    </div>
+
+    <!-- 4. Google -->
+    <div class="seccion<%= vista === 'google' ? ' activa' : '' %>" data-vista="google">
+      <h3>Entrar con Google</h3>
+      <% if (googleClientId) { %>
+        <p class="subtexto">Usa tu cuenta de Google. Si es tu primera vez te pediremos tu fecha de nacimiento.</p>
+        <div id="g_id_onload" data-client_id="<%= googleClientId %>" data-callback="alRecibirGoogle" data-auto_prompt="false"></div>
+        <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="continue_with" data-shape="pill" data-logo_alignment="left"></div>
+        <form method="POST" action="/auth/google" id="form-google"><input type="hidden" name="credential" id="google-credential"></form>
+        <script src="https://accounts.google.com/gsi/client?hl=es" async defer></script>
+      <% } else { %>
+        <p class="subtexto">El acceso con Google todavia no esta configurado en este servidor (falta <code>GOOGLE_CLIENT_ID</code> en el archivo <code>.env</code>). Mientras tanto, usa tu usuario y contrasena.</p>
+      <% } %>
+      <button type="button" class="btn-blanco" data-ir="bienvenida">Volver</button>
+    </div>
+  </div>
+</div>
+<%- include('../partials/scripts') %>
+</body>
+</html>

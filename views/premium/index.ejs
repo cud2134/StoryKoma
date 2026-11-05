@@ -1,0 +1,46 @@
+<%- include('../partials/pagina-top') %>
+<section class="premium-pagina">
+  <section class="premium-presentacion">
+    <span class="premium-etiqueta"><i class="ri-vip-crown-line" aria-hidden="true"></i> STORYKOMA PREMIUM</span>
+    <h1 class="titulo-pagina">Disfruta StoryKoma sin anuncios</h1>
+    <% if (user.esAdmin) { %>
+      <p class="subtexto">Tu cuenta de administrador tiene Premium permanente.</p>
+    <% } else if (user.premiumActivo) { %>
+      <p class="subtexto">Tu plan Premium esta activo hasta el <strong><%= new Date(user.premiumHasta).toLocaleDateString('es-CL', { timeZone: 'America/Santiago' }) %></strong>. La renovacion es manual.</p>
+    <% } else { %>
+      <p class="subtexto">Elige un plan para leer sin interrupciones publicitarias.</p>
+    <% } %>
+  </section>
+
+  <% if (flash) { %><div class="aviso <%= flash.tipo === 'error' ? 'aviso-error' : 'aviso-ok' %>" role="status"><%= flash.texto %></div><% } %>
+
+  <ul class="premium-beneficios">
+    <li><i class="ri-check-line" aria-hidden="true"></i> Sin espacios publicitarios.</li>
+    <li><i class="ri-check-line" aria-hidden="true"></i> Lee mangas sin interrupciones publicitarias.</li>
+    <li><i class="ri-check-line" aria-hidden="true"></i> Pago unico; renovacion manual.</li>
+  </ul>
+
+  <% if (!user.esAdmin) { %>
+    <section class="premium-planes" id="planes" aria-label="Planes disponibles">
+      <% Object.entries(planes).forEach(([clave, plan]) => { %>
+        <article class="premium-plan">
+          <h2><%= plan.nombre %></h2>
+          <p class="premium-precio">$<%= new Intl.NumberFormat('es-CL').format(plan.monto) %> <small>CLP <%= clave === 'anual' ? 'por año' : 'por mes' %></small></p>
+          <p class="premium-renovacion">Acceso Premium por <%= clave === 'anual' ? '1 año' : '1 mes' %>.</p>
+          <% if ((proveedores.mercadopago || proveedores.paypal) && correoConfigurado) { %>
+            <a class="btn-premium-pago" href="/premium/checkout/<%= clave %>">Elegir plan <%= plan.nombre %></a>
+          <% } else { %>
+            <button type="button" class="btn-premium-pago" disabled>Pago no configurado</button>
+          <% } %>
+        </article>
+      <% }) %>
+    </section>
+    <% if (!proveedores.mercadopago && !proveedores.paypal) { %>
+      <p class="aviso aviso-error">Los pagos aun no estan habilitados. El administrador debe configurar las credenciales de un proveedor.</p>
+    <% } else if (!correoConfigurado) { %>
+      <p class="aviso aviso-error">Los pagos se habilitaran al configurar Gmail para enviar los comprobantes.</p>
+    <% } %>
+  <% } %>
+  <p class="premium-nota">El pago se completa en el sitio seguro del proveedor. StoryKoma no solicita ni almacena el numero de tarjeta ni el CVV. El correo de confirmacion es un comprobante no tributario.</p>
+</section>
+<%- include('../partials/pagina-bottom') %>

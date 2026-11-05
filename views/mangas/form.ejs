@@ -1,0 +1,154 @@
+<%- include('../partials/pagina-top') %>
+<a href="<%= manga ? '/mangas/' + manga.id : '/perfil/creador' %>" class="enlace-volver">← Volver</a>
+
+<div class="manga-form-cabecera">
+  <div>
+    <h1 class="titulo-pagina"><%= manga ? 'Editar obra' : 'Publicar nuevo manga' %></h1>
+    <% if (!manga && user) { %><p class="manga-subido-por">Subido por: <strong><%= user.username %></strong></p><% } %>
+  </div>
+</div>
+
+<% if (error) { %><div class="aviso aviso-error" role="alert"><%= error %></div><% } %>
+<% const tieneGeneroAdulto = generos.some((g) => g.esAdulto && (valores.generosElegidos || []).includes(g.id)); %>
+
+<form method="POST" action="<%= manga ? '/mangas/' + manga.id + '/editar' : '/mangas' %>" enctype="multipart/form-data" class="formulario-grande formulario-manga" id="formulario-manga">
+  <div class="formulario-manga-layout">
+    <aside class="columna-portada-modal">
+      <label for="portada" class="zona-arrastre-portada" id="zona-portada" tabindex="0" aria-label="Seleccionar o soltar portada">
+        <img
+          id="preview-portada-manga"
+          class="preview-portada<%= manga && manga.portada ? '' : ' oculto' %>"
+          src="<%= manga && manga.portada ? manga.portada : '' %>"
+          alt="Vista previa de la portada">
+        <span id="texto-portada" class="texto-portada<%= manga && manga.portada ? ' oculto' : '' %>">
+          <strong><%= manga ? 'Cambiar portada' : 'Subir portada' %></strong>
+          <small>JPG, PNG, WEBP o GIF · maximo 100 MB</small>
+        </span>
+      </label>
+      <input id="portada" name="portada" type="file" accept=".jpg,.jpeg,.png,.webp,.gif" <%= manga ? '' : 'required' %> hidden>
+      <p class="estado-archivo-portada" id="estado-archivo-portada" aria-live="polite"></p>
+    </aside>
+
+    <div class="columna-datos-modal">
+      <section class="grupo-formulario-modal">
+        <h2>Datos principales</h2>
+        <div class="grid-datos-manga">
+          <div class="campo">
+            <label for="titulo">Titulo</label>
+            <input id="titulo" name="titulo" maxlength="120" required value="<%= valores.titulo || '' %>" placeholder="Titulo del manga">
+          </div>
+          <div class="campo">
+            <label for="autor">Autor / creador</label>
+            <input id="autor" name="autor" maxlength="100" required value="<%= valores.autor || '' %>" placeholder="Autor o creador">
+          </div>
+          <div class="campo">
+            <label for="estado">Estado de la obra</label>
+            <select id="estado" name="estado">
+              <% estados.forEach((e) => { %><option value="<%= e %>" <%= valores.estado === e ? 'selected' : '' %>><%= e %></option><% }) %>
+            </select>
+          </div>
+          <div class="campo">
+            <label for="tipo">Tipo</label>
+            <select id="tipo" name="tipo">
+              <% tipos.forEach((t) => { %><option value="<%= t %>" <%= valores.tipo === t ? 'selected' : '' %>><%= t %></option><% }) %>
+            </select>
+          </div>
+          <div class="campo">
+            <label for="demografia">Demografia</label>
+            <select id="demografia" name="demografia">
+              <% demografias.forEach((d) => { %><option value="<%= d %>" <%= valores.demografia === d ? 'selected' : '' %>><%= d %></option><% }) %>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <section class="grupo-formulario-modal">
+        <h2>Generos y clasificacion</h2>
+        <p class="ayuda-formulario">Elige al menos un genero para publicar la obra.</p>
+        <div class="panel-generos-modal">
+          <% generos.forEach((g) => { %>
+            <label class="check-genero">
+              <input type="checkbox" name="generos" value="<%= g.id %>" data-genero-adulto="<%= g.esAdulto ? 'true' : 'false' %>" <%= (valores.generosElegidos || []).includes(g.id) ? 'checked' : '' %>>
+              <span><%= g.nombre %></span>
+            </label>
+          <% }) %>
+        </div>
+        <% if (user.esAdulto) { %>
+          <label class="check-line check-adulto-line">
+            <input type="checkbox" name="es_mas18" value="1" aria-describedby="ayuda-clasificacion-adulto" <%= valores.esMas18 || tieneGeneroAdulto ? 'checked' : '' %> <%= tieneGeneroAdulto ? 'disabled' : '' %>>
+            <span>Contenido +18 (solo lo veran mayores de edad)</span>
+          </label>
+          <p id="ayuda-clasificacion-adulto" class="ayuda-formulario" aria-live="polite"><%= tieneGeneroAdulto ? 'Hay un genero adulto seleccionado: +18 es obligatorio. Desmarca ese genero para poder quitar la clasificacion.' : 'Los generos adultos, como Ecchi, obligan a mantener la clasificacion +18.' %></p>
+        <% } %>
+      </section>
+
+      <section class="grupo-formulario-modal">
+        <h2>Sinopsis</h2>
+        <div class="campo">
+          <label for="descripcion">Descripcion / sinopsis</label>
+          <textarea id="descripcion" name="descripcion" maxlength="2000" rows="4" placeholder="Cuenta de que trata la obra"><%= valores.descripcion || '' %></textarea>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <% if (!manga) { %>
+    <% const capitulosIniciales = Array.isArray(valores.capitulos) && valores.capitulos.length ? valores.capitulos : [{ numero: valores.numero || 1, titulo: valores.tituloCapitulo || '' }]; %>
+    <section class="grupo-formulario-modal bloque-capitulos-modal">
+      <div class="header-capitulos-modal">
+        <div>
+          <h2>Capitulos iniciales</h2>
+          <p>Agrega hasta 50 capitulos por publicacion. El peso total de los archivos de capitulos puede ser de hasta <%= limiteCapitulosGB %> GB; cada ZIP/CBZ admite hasta 300 imagenes.</p>
+        </div>
+        <button type="button" id="btn-agregar-capitulo-inicial" class="btn-obra-opt" data-max-capitulos="50">＋ Agregar capitulo</button>
+      </div>
+      <div id="lista-capitulos-iniciales" class="lista-capitulos-form">
+        <% capitulosIniciales.forEach((capitulo, i) => { %>
+          <div class="capitulo-form-item" data-capitulo-inicial>
+            <div class="campo">
+              <label for="numero-capitulo-<%= i %>">Numero</label>
+              <input id="numero-capitulo-<%= i %>" name="capitulos[<%= i %>][numero]" type="number" min="1" max="99999" value="<%= capitulo.numero || '' %>" placeholder="1">
+            </div>
+            <div class="campo">
+              <label for="titulo-capitulo-<%= i %>">Titulo del capitulo</label>
+              <input id="titulo-capitulo-<%= i %>" name="capitulos[<%= i %>][titulo]" maxlength="120" value="<%= capitulo.titulo || '' %>" placeholder="Se asignara automaticamente si lo dejas vacio">
+            </div>
+            <div class="campo campo-archivo-capitulo">
+              <label for="archivos-capitulo-<%= i %>">Paginas o archivo</label>
+              <input id="archivos-capitulo-<%= i %>" name="archivos_capitulo_<%= i %>" class="cap-archivo" type="file" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.zip,.cbz,.pdf">
+              <small class="archivo-ayuda" data-nombre-archivos>Imagenes sueltas, ZIP/CBZ o PDF · maximo <%= limiteCapitulosGB %> GB sumando los capitulos</small>
+            </div>
+            <button type="button" class="btn-quitar-capitulo" aria-label="Quitar capitulo">Quitar</button>
+          </div>
+        <% }) %>
+      </div>
+    </section>
+  <% } %>
+
+  <div class="botones-modal">
+    <a href="<%= manga ? '/mangas/' + manga.id : '/perfil/creador' %>" class="btn-m-secundario">Cancelar</a>
+    <button type="submit" class="btn-m-primario"><%= manga ? 'Guardar cambios' : 'Publicar obra' %></button>
+  </div>
+</form>
+
+<% if (!manga) { %>
+  <template id="plantilla-capitulo-inicial">
+    <div class="capitulo-form-item" data-capitulo-inicial>
+      <div class="campo">
+        <label data-label-numero>Numero</label>
+        <input data-input-numero type="number" min="1" max="99999" placeholder="1">
+      </div>
+      <div class="campo">
+        <label data-label-titulo>Titulo del capitulo</label>
+        <input data-input-titulo maxlength="120" placeholder="Se asignara automaticamente si lo dejas vacio">
+      </div>
+      <div class="campo campo-archivo-capitulo">
+        <label data-label-archivo>Paginas o archivo</label>
+        <input data-input-archivo class="cap-archivo" type="file" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.zip,.cbz,.pdf">
+        <small class="archivo-ayuda" data-nombre-archivos>Imagenes sueltas, ZIP/CBZ o PDF · maximo <%= limiteCapitulosGB %> GB sumando los capitulos</small>
+      </div>
+      <button type="button" class="btn-quitar-capitulo" aria-label="Quitar capitulo">Quitar</button>
+    </div>
+  </template>
+<% } %>
+<%- include('../partials/pagina-bottom') %>

@@ -1,0 +1,76 @@
+<%- include('../partials/pagina-top') %>
+<section class="ficha-manga">
+  <div class="ficha-portada" style="background-image:url('<%= urlCss(manga.portada) %>')">
+    <% if (manga.esMas18) { %><span class="badge-mas18-flotante">+18</span><% } %>
+  </div>
+
+  <div class="ficha-info">
+    <% if (manga.visibilidad === 'Oculto') { %><div class="aviso aviso-error">Esta obra esta oculta por un administrador. Solo tu y los administradores pueden verla.</div><% } %>
+    <h1 class="ficha-titulo"><%= manga.titulo %></h1>
+    <p class="ficha-autor">por <strong><%= manga.autor %></strong> · subido por <%= manga.subidoPor %></p>
+
+    <div class="ficha-etiquetas">
+      <span class="chip tipo-<%= manga.tipo.toLowerCase() %>"><%= manga.tipo %></span>
+      <span class="chip <%= manga.demografia.toLowerCase() %>"><%= manga.demografia %></span>
+    </div>
+    <div class="ficha-generos"><% manga.generos.forEach((g) => { %><a class="chip-genero" href="/buscar?genero=<%= generosIds && generosIds[g] || '' %>"><%= g %></a><% }) %></div>
+
+    <div class="ficha-resumen">
+      <span class="chip chip-estado estado-<%= manga.estado.toLowerCase().replace(' ', '-') %>"><%= manga.estado %></span>
+      <span class="chip"><i class="ri-eye-line icono-remix" aria-hidden="true"></i> <%= manga.vistas %> vistas</span>
+    </div>
+    <p class="ficha-sinopsis"><%= manga.descripcion || 'Sin sinopsis disponible.' %></p>
+
+    <!-- Guardar en la biblioteca segun el estado de lectura -->
+    <form method="POST" action="/mangas/<%= manga.id %>/biblioteca" class="fila-guardar">
+      <span class="etiqueta-guardar">Guardar en mi biblioteca:</span>
+      <% [['siguiendo', 'Siguiendo'], ['pendiente', 'Pendiente'], ['terminado', 'Terminado']].forEach(([valor, texto]) => { %>
+        <button type="submit" name="estado" value="<%= valor %>" class="btn-guardar<%= estadoBiblioteca === valor ? ' activo' : '' %>" aria-pressed="<%= estadoBiblioteca === valor %>"><%= texto %></button>
+      <% }) %>
+    </form>
+    <% if (estadoBiblioteca) { %>
+      <form method="POST" action="/mangas/<%= manga.id %>/biblioteca?_method=DELETE" class="fila-quitar"><button class="btn-enlace">Quitar de mi biblioteca</button></form>
+    <% } %>
+
+    <!-- Comentar y denunciar (la denuncia va al lado del boton de comentar, arriba del primer capitulo) -->
+    <div class="fila-comentar-denunciar">
+      <a href="#comentarios" class="btn-obra-opt" data-abrir-comentario><i class="ri-chat-3-line icono-remix" aria-hidden="true"></i> Comentar</a>
+      <details class="desplegable-denuncia">
+        <summary class="btn-obra-opt btn-denuncia"><i class="ri-flag-line icono-remix" aria-hidden="true"></i> Denunciar</summary>
+        <form method="POST" action="/mangas/<%= manga.id %>/denunciar" class="form-denuncia">
+          <p class="subtexto">Avisa al administrador si esta obra tiene un problema.</p>
+          <select name="motivo" required>
+            <option value="">Elige el motivo...</option>
+            <% motivosDenuncia.forEach((m) => { %><option value="<%= m %>"><%= m %></option><% }) %>
+          </select>
+          <textarea name="detalle" maxlength="500" placeholder="Cuentanos que pasa (ej: las imagenes son de otro manga)"></textarea>
+          <button type="submit" class="btn-accion-principal">Enviar denuncia</button>
+        </form>
+      </details>
+    </div>
+
+  </div>
+</section>
+
+<section class="seccion-capitulos">
+  <h3 class="titulo-seccion">Capitulos</h3>
+  <% if (!capitulos.length) { %>
+    <p class="mensaje-vacio">Esta obra todavia no tiene capitulos.</p>
+  <% } else { %>
+    <ul class="lista-capitulos">
+      <% capitulos.forEach((c) => { const visto = ultimoCapituloLeido !== null && c.numero <= ultimoCapituloLeido; %>
+        <li class="<%= visto ? 'capitulo-visto' : 'capitulo-no-visto' %>">
+          <a href="/mangas/<%= manga.id %>/capitulos/<%= c.numero %>">
+            <span class="cap-numero">Cap. <%= c.numero %></span>
+            <span class="cap-titulo"><%= c.titulo %></span>
+            <span class="cap-fecha"><%= fecha(c.fecha) %></span>
+            <i class="<%= visto ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line' %> icono-remix indicador-lectura" role="img" aria-label="<%= visto ? 'Leido' : 'No leido' %>" title="<%= visto ? 'Leido' : 'No leido' %>"></i>
+          </a>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+</section>
+
+<%- include('../partials/comentarios', { comentarios, mangaId: manga.id }) %>
+<%- include('../partials/pagina-bottom') %>

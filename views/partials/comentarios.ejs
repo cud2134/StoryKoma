@@ -1,0 +1,33 @@
+<%# Parametros: comentarios, mangaId, capituloId (opcional) %>
+<section class="panel-comentarios" id="comentarios">
+  <h3 class="titulo-seccion">Comentarios (<%= comentarios.length %>)</h3>
+
+  <details class="desplegable-panel">
+    <summary class="btn-obra-opt"><i class="ri-chat-3-line icono-remix" aria-hidden="true"></i> Agregar comentario</summary>
+    <form method="POST" action="/mangas/<%= mangaId %>/comentarios" class="form-comentario">
+      <% if (locals.capituloId) { %><input type="hidden" name="capitulo_id" value="<%= capituloId %>"><% } %>
+      <textarea name="texto" maxlength="1000" required placeholder="Escribe tu comentario con respeto..."></textarea>
+      <button type="submit" class="btn-accion-principal">Publicar</button>
+    </form>
+  </details>
+
+  <div class="lista-comentarios">
+    <% if (!comentarios.length) { %><p class="mensaje-vacio">Sin comentarios todavia. ¡Se el primero!</p><% } %>
+    <% comentarios.forEach((c) => { %>
+      <article class="comentario-item">
+        <div class="comentario-cabecera">
+          <span class="mini-avatar" style="background-image:url('<%= urlCss(avatarDe(c)) %>')"></span>
+          <strong><%= c.username %></strong>
+          <small><%= hace(c.fecha) %></small>
+        </div>
+        <p><%= c.texto %></p>
+        <div class="comentario-acciones">
+          <form method="POST" action="/comentarios/<%= c.id %>/like"><button class="btn-like<%= c.yoLike ? ' activo' : '' %>" aria-label="<%= c.yoLike ? 'Quitar me gusta' : 'Me gusta' %>: <%= c.likes %>"><i class="ri-thumb-up-line icono-remix" aria-hidden="true"></i> <%= c.likes %></button></form>
+          <% if (c.idUsuario === user.id || user.esAdmin) { %>
+            <form method="POST" action="/comentarios/<%= c.id %>?_method=DELETE" data-confirm="¿Eliminar este comentario?"><button class="btn-like"><i class="ri-delete-bin-line icono-remix" aria-hidden="true"></i> Eliminar</button></form>
+          <% } %>
+        </div>
+      </article>
+    <% }) %>
+  </div>
+</section>

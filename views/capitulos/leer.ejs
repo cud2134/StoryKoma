@@ -1,0 +1,29 @@
+<%- include('../partials/pagina-top') %>
+<%
+  const _nav = () => `
+    <div class="nav-capitulo">
+      ${anterior !== null ? `<a class="btn-obra-opt" href="/mangas/${manga.id}/capitulos/${anterior}">← Anterior</a>` : '<span class="btn-obra-opt deshabilitado">← Anterior</span>'}
+      <a class="btn-obra-opt" href="/mangas/${manga.id}">Todos los capitulos</a>
+      ${siguiente !== null ? `<a class="btn-obra-opt" href="/mangas/${manga.id}/capitulos/${siguiente}">Siguiente →</a>` : '<span class="btn-obra-opt deshabilitado">Siguiente →</span>'}
+    </div>`;
+%>
+<a href="/mangas/<%= manga.id %>" class="enlace-volver">← <%= manga.titulo %></a>
+<h1 class="titulo-pagina">Capitulo <%= capitulo.numero %>: <%= capitulo.titulo %></h1>
+<%- _nav() %>
+
+<section class="visor">
+  <% if (capitulo.formato === 'pdf') { %>
+    <embed class="visor-pdf" src="<%= capitulo.archivoRuta %>" type="application/pdf">
+    <p class="subtexto"><a class="btn-enlace" href="<%= capitulo.archivoRuta %>" target="_blank" rel="noopener">Abrir el PDF en otra pestana</a></p>
+  <% } else if (!capitulo.paginas.length) { %>
+    <p class="mensaje-vacio">Este capitulo todavia no tiene paginas.</p>
+  <% } else { %>
+    <% capitulo.paginas.forEach((ruta, i) => { %>
+      <img class="visor-pagina" src="<%= ruta %>" alt="Pagina <%= i + 1 %>" loading="lazy">
+    <% }) %>
+  <% } %>
+</section>
+
+<%- _nav() %>
+<%- include('../partials/comentarios', { comentarios, mangaId: manga.id, capituloId: capitulo.id }) %>
+<%- include('../partials/pagina-bottom') %>

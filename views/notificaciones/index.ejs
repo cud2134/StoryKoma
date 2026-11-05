@@ -1,0 +1,72 @@
+<%- include('../partials/pagina-top') %>
+<div class="fila-titulo-accion">
+  <h1 class="titulo-pagina"><i class="ri-notification-3-line icono-remix" aria-hidden="true"></i> Notificaciones</h1>
+  <% if (notificaciones.some((n) => !n.leida)) { %>
+    <form method="POST" action="/notificaciones/leer"><button class="btn-obra-opt">Marcar todas como leidas</button></form>
+  <% } %>
+</div>
+
+<nav class="pestanas-biblioteca">
+  <a href="/notificaciones?tab=comunes" class="pestana<%= tab === 'comunes' ? ' activa' : '' %>">Mensajes comunes</a>
+  <a href="/notificaciones?tab=admin" class="pestana<%= tab === 'admin' ? ' activa' : '' %>">Mensajes de administracion</a>
+  <% if (user.esAdmin) { %><a href="/notificaciones?tab=moderacion" class="pestana<%= tab === 'moderacion' ? ' activa' : '' %>">Denuncias y apelaciones<% if (denunciasPendientes.length + apelacionesPendientes.filter((a) => a.estado === 'Pendiente').length > 0) { %> <span class="contador alerta"><%= denunciasPendientes.length + apelacionesPendientes.filter((a) => a.estado === 'Pendiente').length %></span><% } %></a><% } %>
+</nav>
+
+<% if (tab === 'moderacion') { %>
+  <section class="moderacion-notificaciones">
+    <h2 class="titulo-seccion">Denuncias pendientes (<%= denunciasPendientes.length %>)</h2>
+    <% if (!denunciasPendientes.length) { %>
+      <p class="mensaje-vacio">No hay denuncias pendientes.</p>
+    <% } else { %>
+      <ul class="lista-notificaciones">
+        <% denunciasPendientes.forEach((denuncia) => { %>
+          <li class="notif notif-advertencia nueva">
+            <span class="notif-icono" aria-hidden="true"><i class="ri-flag-line icono-remix"></i></span>
+            <div class="notif-texto">
+              <strong>Denuncia: <%= denuncia.motivo %></strong>
+              <p>Obra: <a href="/mangas/<%= denuncia.idManga %>"><%= denuncia.manga %></a> · Denunciante: <%= denuncia.denunciante %></p>
+              <% if (denuncia.detalle) { %><p><%= denuncia.detalle %></p><% } %>
+              <small><%= hace(denuncia.fecha) %></small>
+            </div>
+            <a class="btn-obra-opt" href="/admin?tab=denuncias">Revisar</a>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+
+    <h2 class="titulo-seccion">Apelaciones pendientes o en revision (<%= apelacionesPendientes.length %>)</h2>
+    <% if (!apelacionesPendientes.length) { %>
+      <p class="mensaje-vacio">No hay apelaciones pendientes ni en revision.</p>
+    <% } else { %>
+      <ul class="lista-notificaciones">
+        <% apelacionesPendientes.forEach((apelacion) => { %>
+          <li class="notif notif-sistema nueva">
+            <span class="notif-icono" aria-hidden="true"><i class="ri-file-list-3-line icono-remix"></i></span>
+            <div class="notif-texto">
+              <strong>Apelacion de <%= apelacion.usuario %></strong>
+              <p><%= apelacion.mensaje %></p>
+              <small>Estado: <%= apelacion.estado %> · <%= hace(apelacion.fechaBaneo) %></small>
+            </div>
+            <a class="btn-obra-opt" href="/admin?tab=apelaciones">Revisar</a>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </section>
+<% } else if (!notificaciones.length) { %>
+  <p class="mensaje-vacio"><%= tab === 'comunes' ? 'No tienes mensajes comunes. Te avisaremos cuando comenten tus obras o haya capitulos nuevos.' : 'No tienes mensajes de administracion.' %></p>
+<% } else { %>
+  <ul class="lista-notificaciones">
+    <% notificaciones.forEach((n) => { %>
+      <li class="notif notif-<%= n.tipo %><%= n.leida ? '' : ' nueva' %>">
+        <span class="notif-icono" aria-hidden="true"><i class="<%= n.tipo === 'capitulo' ? 'ri-book-open-line' : n.tipo === 'comentario' ? 'ri-chat-3-line' : n.tipo === 'advertencia' ? 'ri-alert-line' : 'ri-information-line' %> icono-remix"></i></span>
+        <div class="notif-texto">
+          <% if (n.enlace) { %><a href="<%= n.enlace %>"><%= n.mensaje %></a><% } else { %><span><%= n.mensaje %></span><% } %>
+          <small><%= hace(n.fecha) %></small>
+        </div>
+        <form method="POST" action="/notificaciones/<%= n.id %>?_method=DELETE"><button class="btn-enlace" title="Borrar" aria-label="Borrar notificacion"><i class="ri-close-line icono-remix" aria-hidden="true"></i></button></form>
+      </li>
+    <% }) %>
+  </ul>
+<% } %>
+<%- include('../partials/pagina-bottom') %>

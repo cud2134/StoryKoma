@@ -1,0 +1,21 @@
+<%# Parametro: activo = 'lector' | 'creador' %>
+<section class="perfil-cabecera">
+  <div class="perfil-identidad">
+    <div class="perfil-avatar" style="background-image:url('<%= urlCss(avatarDe(user)) %>')"></div>
+    <div class="perfil-datos">
+      <h1><%= user.username %></h1>
+      <p class="subtexto"><%= user.correo %> · <span class="chip rol-<%= user.rol.toLowerCase() %>"><%= user.rol %></span></p>
+    </div>
+  </div>
+
+  <%- include('_datos') %>
+
+  <!-- Botones principales segun el tipo de usuario -->
+  <nav class="perfil-botones">
+    <a class="btn-perfil<%= activo === 'lector' ? ' activo' : '' %>" href="/perfil"><i class="ri-book-open-line icono-remix" aria-hidden="true"></i> Vista de mangas</a>
+    <% if (user.esCreador) { %><a class="btn-perfil<%= activo === 'creador' ? ' activo' : '' %>" href="/perfil/creador"><i class="ri-quill-pen-line icono-remix" aria-hidden="true"></i> Panel creador</a><% } %>
+    <% if (user.esAdmin) { %><a class="btn-perfil" href="/admin"><i class="ri-shield-user-line icono-remix" aria-hidden="true"></i> Panel administrador</a><% } %>
+    <form method="POST" action="/logout" class="form-logout"><button type="submit" class="btn-perfil btn-salir">Cerrar sesion</button></form>
+  </nav>
+</section>
+<%- include('../partials/anuncio') %>

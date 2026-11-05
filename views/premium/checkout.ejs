@@ -1,0 +1,53 @@
+<%- include('../partials/pagina-top') %>
+<section class="premium-checkout">
+  <a class="enlace-volver" href="/premium#planes">← Volver a los planes</a>
+  <div class="premium-checkout-cabecera">
+    <span class="premium-etiqueta"><i class="ri-vip-crown-line" aria-hidden="true"></i> STORYKOMA PREMIUM</span>
+    <h1 class="titulo-pagina">Completa tus datos</h1>
+    <p class="subtexto">El pago se procesara en el sitio seguro del proveedor.</p>
+  </div>
+  <% if (error) { %><div class="aviso aviso-error" role="alert"><%= error %></div><% } %>
+
+  <section class="premium-resumen-pago" aria-label="Resumen del plan">
+    <div><h2>Plan <%= plan.nombre %></h2><p>Vigencia: <%= planKey === 'anual' ? '1 año' : '1 mes' %></p></div>
+    <strong>$<%= new Intl.NumberFormat('es-CL').format(plan.monto) %> CLP</strong>
+  </section>
+
+  <form class="premium-checkout-form" method="POST" action="/premium/checkout/<%= planKey %>">
+    <input type="hidden" name="csrf" value="<%= csrfToken %>">
+    <div class="premium-datos-comprador">
+      <div class="campo">
+        <label for="pago-nombre">Nombre</label>
+        <input id="pago-nombre" name="nombre" type="text" maxlength="80" autocomplete="given-name" required value="<%= valores.nombre %>">
+      </div>
+      <div class="campo">
+        <label for="pago-apellido">Apellido</label>
+        <input id="pago-apellido" name="apellido" type="text" maxlength="80" autocomplete="family-name" required value="<%= valores.apellido %>">
+      </div>
+      <div class="campo premium-campo-correo">
+        <label for="pago-correo">Correo electronico para el comprobante</label>
+        <input id="pago-correo" name="correo" type="email" maxlength="100" autocomplete="email" required value="<%= valores.correo %>">
+      </div>
+    </div>
+    <fieldset class="premium-metodos-pago">
+      <legend>Medio de pago seguro</legend>
+      <% if (proveedores.mercadopago) { %>
+        <label class="premium-metodo"><input type="radio" name="proveedor" value="mercadopago" required <%= valores.proveedor === 'mercadopago' ? 'checked' : '' %>><span>Mercado Pago</span></label>
+      <% } %>
+      <% if (proveedores.paypal) { %>
+        <label class="premium-metodo"><input type="radio" name="proveedor" value="paypal" required <%= valores.proveedor === 'paypal' ? 'checked' : '' %>><span>PayPal</span></label>
+      <% } %>
+      <% if (!proveedores.mercadopago && !proveedores.paypal) { %>
+        <p class="premium-nota">No hay medios de pago configurados en este momento.</p>
+      <% } %>
+    </fieldset>
+    <% if (!correoConfigurado) { %><div class="aviso aviso-error" role="alert">No se pueden iniciar pagos hasta configurar Gmail para enviar los comprobantes.</div><% } %>
+    <p class="premium-seguridad">Nunca ingreses el numero de tarjeta ni CVV en StoryKoma. Esos datos se escriben solo en la pagina segura del proveedor.</p>
+    <p class="premium-nota">Al completar el pago enviaremos un comprobante no tributario al correo indicado.</p>
+    <div class="premium-checkout-acciones">
+      <a class="btn-m-secundario" href="/premium#planes">Cancelar</a>
+      <button class="btn-premium-pago" type="submit" <%= !correoConfigurado || (!proveedores.mercadopago && !proveedores.paypal) ? 'disabled' : '' %>>Continuar al pago seguro</button>
+    </div>
+  </form>
+</section>
+<%- include('../partials/pagina-bottom') %>

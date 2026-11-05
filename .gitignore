@@ -1,0 +1,10 @@
+node_modules/
+.env
+*.log
+.DS_Store
+.vscode/
+.idea/
+public/uploads/portadas/*
+public/uploads/capitulos/*
+public/uploads/avatares/*
+!public/uploads/*/.gitkeep

@@ -1,0 +1,10 @@
+<%- include('../partials/head', { bodyClass: 'pagina-error' }) %>
+<div class="caja-error">
+  <h1 class="codigo-error"><%= codigo %></h1>
+  <h2><%= title %></h2>
+  <p class="mensaje-vacio"><%= mensaje %></p>
+  <a class="btn-accion-principal" href="<%= locals.user ? '/inicio' : '/' %>">Volver al inicio</a>
+</div>
+<%- include('../partials/scripts') %>
+</body>
+</html>

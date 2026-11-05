@@ -1,0 +1,45 @@
+<%- include('../partials/pagina-top') %>
+<section class="fisico-cabecera">
+  <h1 class="titulo-pagina"><i class="ri-book-2-line icono-remix" aria-hidden="true"></i> Manga fisico</h1>
+  <p class="subtexto">Te recomendamos donde comprar cada tomo y comparamos precios entre tiendas. <strong>StoryKoma no vende nada</strong>: la compra se hace en la pagina de la tienda.</p>
+</section>
+
+<form id="fisico-form" class="barra-buscador" autocomplete="off" data-adulto="<%= user.esAdulto ? '1' : '0' %>">
+  <div class="fila-busqueda">
+    <input type="search" id="fisico-q" class="input-buscar" placeholder="Buscar manga fisico (ej: One Piece, Berserk...)">
+    <button type="submit" class="btn-accion-principal">Buscar</button>
+  </div>
+  <div class="fila-filtros">
+    <label class="select-etiqueta">Ordenar por
+      <select id="fisico-orden">
+        <option value="POPULARITY_DESC">Mas populares</option>
+        <option value="SCORE_DESC">Mejor valorados</option>
+        <option value="START_DATE_DESC">Mas recientes</option>
+        <option value="TITLE_ROMAJI">Titulo (A-Z)</option>
+      </select>
+    </label>
+    <% if (user.esAdulto) { %>
+      <label class="select-etiqueta">Contenido
+        <select id="fisico-contenido">
+          <option value="normal">Apto para todos</option>
+          <option value="adulto">Solo +18</option>
+        </select>
+      </label>
+    <% } %>
+  </div>
+</form>
+
+<div id="fisico-estado" class="mensaje-vacio" hidden></div>
+<button type="button" class="btn-obra-opt" id="fisico-reintentar" hidden>Reintentar</button>
+<div id="fisico-lista" class="fisico-lista" aria-live="polite"></div>
+
+<nav id="fisico-paginacion" class="fisico-paginacion" hidden>
+  <button type="button" class="btn-obra-opt" id="fisico-anterior">← Pagina anterior</button>
+  <span id="fisico-pagina-num"></span>
+  <button type="button" class="btn-accion-principal" id="fisico-siguiente">Ir a la siguiente pagina →</button>
+</nav>
+
+<p class="nota-precios">Los precios son <strong>referenciales y aproximados</strong> (en pesos chilenos) y pueden cambiar. Los datos de las obras vienen de AniList. Confirma siempre el precio, el stock y los tomos disponibles en la pagina de la tienda antes de comprar.</p>
+
+<script src="/js/fisico.js"></script>
+<%- include('../partials/pagina-bottom') %>

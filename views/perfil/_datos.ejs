@@ -1,0 +1,12 @@
+<details class="desplegable-panel perfil-editar" <%= error ? 'open' : '' %>>
+  <summary class="btn-obra-opt"><i class="ri-settings-line icono-remix" aria-hidden="true"></i> Editar datos del perfil</summary>
+  <% if (error) { %><div class="aviso aviso-error"><%= error %></div><% } %>
+  <form method="POST" action="/perfil" enctype="multipart/form-data" class="formulario-grande">
+    <div class="rejilla-form">
+      <div class="campo"><label for="p-username">Nombre de usuario</label><input id="p-username" name="username" required minlength="4" maxlength="20" pattern="[A-Za-z0-9_.-]{4,20}" value="<%= valores.username %>"></div>
+      <div class="campo"><label for="p-fecha">Fecha de nacimiento</label><input id="p-fecha" name="fecha_nacimiento" type="date" required min="<%= fechaNacimientoMinima() %>" max="<%= fechaNacimientoMaxima() %>" value="<%= valores.fecha_nacimiento %>"></div>
+      <div class="campo campo-ancho"><label for="p-avatar">Foto de perfil (opcional)</label><input id="p-avatar" name="avatar" type="file" accept=".jpg,.jpeg,.png,.webp,.gif"></div>
+    </div>
+    <button type="submit" class="btn-accion-principal">Guardar datos del perfil</button>
+  </form>
+</details>

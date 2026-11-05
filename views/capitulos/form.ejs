@@ -1,0 +1,63 @@
+<%- include('../partials/pagina-top') %>
+<a href="/mangas/<%= manga.id %>" class="enlace-volver">← <%= manga.titulo %></a>
+<h1 class="titulo-pagina">Agregar capitulos</h1>
+
+<% if (error) { %><div class="aviso aviso-error" role="alert"><%= error %></div><% } %>
+<% const capitulos = Array.isArray(valores.capitulos) && valores.capitulos.length ? valores.capitulos : [{ numero: '', titulo: '' }]; %>
+<form method="POST" action="/mangas/<%= manga.id %>/capitulos" enctype="multipart/form-data" class="formulario-grande formulario-manga">
+  <section class="grupo-formulario-modal bloque-capitulos-modal">
+    <div class="header-capitulos-modal">
+      <div>
+        <h2>Capitulos nuevos</h2>
+        <p>Agrega uno o varios capitulos. Para cada uno puedes subir imagenes, un ZIP/CBZ o un PDF.</p>
+      </div>
+      <button type="button" id="btn-agregar-capitulo-inicial" class="btn-obra-opt">＋ Agregar capitulo</button>
+    </div>
+    <div id="lista-capitulos-iniciales" class="lista-capitulos-form">
+      <% capitulos.forEach((capitulo, i) => { %>
+        <div class="capitulo-form-item" data-capitulo-inicial>
+          <div class="campo">
+            <label for="numero-capitulo-<%= i %>">Numero</label>
+            <input id="numero-capitulo-<%= i %>" name="capitulos[<%= i %>][numero]" type="number" min="1" max="99999" required value="<%= capitulo.numero || '' %>" placeholder="1">
+          </div>
+          <div class="campo">
+            <label for="titulo-capitulo-<%= i %>">Titulo del capitulo</label>
+            <input id="titulo-capitulo-<%= i %>" name="capitulos[<%= i %>][titulo]" maxlength="120" value="<%= capitulo.titulo || '' %>" placeholder="Opcional; por defecto Capitulo <%= capitulo.numero || '' %>">
+          </div>
+          <div class="campo campo-archivo-capitulo">
+            <label for="archivos-capitulo-<%= i %>">Paginas o archivo</label>
+            <input id="archivos-capitulo-<%= i %>" name="archivos_capitulo_<%= i %>" class="cap-archivo" type="file" multiple required accept=".jpg,.jpeg,.png,.webp,.gif,.zip,.cbz,.pdf">
+            <small class="archivo-ayuda" data-nombre-archivos>Imagenes sueltas, ZIP/CBZ o PDF · maximo 100 MB por archivo</small>
+          </div>
+          <button type="button" class="btn-quitar-capitulo" aria-label="Quitar capitulo">Quitar</button>
+        </div>
+      <% }) %>
+    </div>
+  </section>
+
+  <p class="subtexto">Puedes publicar hasta 10 capitulos a la vez. Avisaremos a quienes tienen esta obra en su biblioteca.</p>
+  <div class="botones-modal">
+    <a href="/mangas/<%= manga.id %>" class="btn-m-secundario">Cancelar</a>
+    <button type="submit" class="btn-m-primario">Publicar capitulos</button>
+  </div>
+</form>
+
+<template id="plantilla-capitulo-inicial">
+  <div class="capitulo-form-item" data-capitulo-inicial>
+    <div class="campo">
+      <label data-label-numero>Numero</label>
+      <input data-input-numero type="number" min="1" max="99999" required placeholder="1">
+    </div>
+    <div class="campo">
+      <label data-label-titulo>Titulo del capitulo</label>
+      <input data-input-titulo maxlength="120" placeholder="Opcional; se asignara automaticamente">
+    </div>
+    <div class="campo campo-archivo-capitulo">
+      <label data-label-archivo>Paginas o archivo</label>
+      <input data-input-archivo class="cap-archivo" type="file" multiple required accept=".jpg,.jpeg,.png,.webp,.gif,.zip,.cbz,.pdf">
+      <small class="archivo-ayuda" data-nombre-archivos>Imagenes sueltas, ZIP/CBZ o PDF · maximo 100 MB por archivo</small>
+    </div>
+    <button type="button" class="btn-quitar-capitulo" aria-label="Quitar capitulo">Quitar</button>
+  </div>
+</template>
+<%- include('../partials/pagina-bottom') %>

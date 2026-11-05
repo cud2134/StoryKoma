@@ -1,0 +1,26 @@
+{
+  "name": "storykoma",
+  "version": "1.0.0",
+  "description": "StoryKoma: lectura de manga online y recomendacion de compra de manga fisico (Node.js + Express + MVC + MySQL + EJS)",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node --watch app.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.16",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.6.1",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "google-auth-library": "^9.15.0",
+    "method-override": "^3.0.0",
+    "multer": "^1.4.5-lts.1",
+    "mysql2": "^3.11.5",
+    "remixicon": "^4.9.1"
+  }
+}

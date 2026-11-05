@@ -1,0 +1,12 @@
+<a class="tarjeta-manga-com" href="/mangas/<%= manga.id %>">
+  <div class="portada-manga-card">
+    <div class="etiqueta-superior-tipo tipo-<%= manga.tipo.toLowerCase() %>"><%= manga.tipo %></div>
+    <div class="portada-contenedor-proporcional" style="background-image:url('<%= urlCss(manga.portada) %>')">
+      <% if (manga.esMas18) { %><span class="badge-mas18-flotante">+18</span><% } %>
+      <% if (manga.visibilidad === 'Oculto') { %><span class="badge-oculto">OCULTO</span><% } %>
+    </div>
+    <div class="info-capitulo-banner"><%= manga.ultimoCapituloLeido ? `Ultimo leido: ${manga.ultimoCapituloLeido}` : manga.ultimoCapitulo %></div>
+    <div class="etiqueta-inferior-demografia <%= manga.demografia.toLowerCase() %>"><%= manga.demografia %></div>
+  </div>
+  <div class="pie-titulo-manga"><h4><%= manga.titulo %></h4><p><%= manga.totalCapitulos %> capitulos</p></div>
+</a>

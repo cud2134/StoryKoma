@@ -1,0 +1,18 @@
+<%- include('../partials/pagina-top') %>
+<%- include('_cabecera', { activo: 'lector' }) %>
+
+<h2 class="titulo-seccion">Mi biblioteca</h2>
+<div class="pestanas-biblioteca">
+  <% [['siguiendo', 'Siguiendo'], ['pendiente', 'Pendientes'], ['terminado', 'Terminados']].forEach(([clave, nombre]) => { %>
+    <a href="/perfil?tab=<%= clave %>" class="pestana<%= tab === clave ? ' activa' : '' %>"><%= nombre %> <span class="contador"><%= grupos[clave].length %></span></a>
+  <% }) %>
+</div>
+
+<% if (!grupos[tab].length) { %>
+  <p class="mensaje-vacio">No tienes mangas en esta seccion. Entra a una obra y guardala con los botones de «Guardar en mi biblioteca».</p>
+<% } else { %>
+  <div class="grilla-mangas">
+    <% grupos[tab].forEach((manga) => { %><%- include('../partials/tarjeta', { manga }) %><% }) %>
+  </div>
+<% } %>
+<%- include('../partials/pagina-bottom') %>

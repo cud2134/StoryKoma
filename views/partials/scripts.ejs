@@ -1,0 +1,10 @@
+<% if (user && !user.esAdmin && !user.premiumActivo) { %>
+  <div class="modal-anuncio" id="modal-anuncio" role="dialog" aria-modal="true" aria-labelledby="modal-anuncio-titulo" hidden>
+    <div class="modal-anuncio-contenido">
+      <h2 id="modal-anuncio-titulo">Anuncio</h2>
+      <%- include('anuncio') %>
+      <button type="button" class="btn-accion-principal" data-cerrar-anuncio>Continuar</button>
+    </div>
+  </div>
+<% } %>
+<script src="/js/main.js"></script>

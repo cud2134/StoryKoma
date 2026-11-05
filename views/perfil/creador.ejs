@@ -1,0 +1,36 @@
+<%- include('../partials/pagina-top') %>
+<%- include('_cabecera', { activo: 'creador' }) %>
+
+<div class="fila-titulo-accion">
+  <h2 class="titulo-seccion">Mis obras (<%= obras.length %>)</h2>
+  <a href="/mangas/nuevo" class="btn-accion-principal"><i class="ri-add-line icono-remix" aria-hidden="true"></i> Publicar nuevo manga</a>
+</div>
+
+<% if (!obras.length) { %>
+  <p class="mensaje-vacio">Todavia no has publicado ninguna obra.</p>
+<% } else { %>
+  <div class="lista-obras">
+    <% obras.forEach((o) => { %>
+      <article class="obra-fila">
+        <a class="obra-mini" href="/mangas/<%= o.id %>" style="background-image:url('<%= urlCss(o.portada) %>')"></a>
+        <div class="obra-datos">
+          <a href="/mangas/<%= o.id %>"><strong><%= o.titulo %></strong></a>
+          <small><%= o.tipo %> · <%= o.totalCapitulos %> capitulos · <%= o.ultimoCapitulo %><%= o.visibilidad === 'Oculto' ? ' · OCULTA POR ADMINISTRADOR' : '' %></small>
+        </div>
+        <form method="POST" action="/mangas/<%= o.id %>/estado">
+          <input type="hidden" name="volver" value="perfil">
+          <select name="estado" onchange="this.form.submit()" aria-label="Estado de <%= o.titulo %>">
+            <% estados.forEach((e) => { %><option value="<%= e %>" <%= o.estado === e ? 'selected' : '' %>><%= e %></option><% }) %>
+          </select>
+        </form>
+        <div class="obra-acciones">
+          <a class="btn-obra-opt" href="/mangas/<%= o.id %>/capitulos/nuevo"><i class="ri-add-line icono-remix" aria-hidden="true"></i> Capitulo</a>
+          <a class="btn-obra-opt" href="/mangas/<%= o.id %>/editar" title="Editar manga" aria-label="Editar <%= o.titulo %>"><i class="ri-edit-line icono-remix" aria-hidden="true"></i></a>
+          <form method="POST" action="/mangas/<%= o.id %>?_method=DELETE" data-confirm="¿Eliminar «<%= o.titulo %>» con todos sus capitulos?"><button class="btn-obra-opt btn-peligro" title="Eliminar manga" aria-label="Eliminar <%= o.titulo %>"><i class="ri-delete-bin-line icono-remix" aria-hidden="true"></i></button></form>
+        </div>
+        <small class="obra-estadisticas"><i class="ri-eye-line icono-remix" aria-hidden="true"></i> <%= o.vistas %> visitas · <i class="ri-chat-3-line icono-remix" aria-hidden="true"></i> <%= o.totalComentarios %> comentarios</small>
+      </article>
+    <% }) %>
+  </div>
+<% } %>
+<%- include('../partials/pagina-bottom') %>

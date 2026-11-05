@@ -1,0 +1,35 @@
+<%- include('../partials/head', { bodyClass: 'pagina-login' }) %>
+<div class="netflix-bg" aria-hidden="true"></div>
+<div class="fondo-animado-mangas" id="wallpaper-container" aria-hidden="true">
+    <% portadasFondo.slice(0, 15).forEach((portada) => { %>
+      <div class="manga-card"><img src="<%= portada %>" alt="" loading="eager"></div>
+    <% }) %>
+</div>
+<script type="application/json" id="datos-portadas-fondo"><%- json(portadasFondo) %></script>
+<div class="pantalla-fondo">
+  <div class="tarjeta-interfaz">
+    <h2 class="logo-app">Story<span>Koma</span></h2>
+    <h3>Completa tu cuenta</h3>
+    <p class="subtexto">Google confirmo tu correo <strong><%= correo %></strong>. Falta un ultimo paso.</p>
+    <% if (error) { %><div class="aviso aviso-error"><%= error %></div><% } %>
+    <form method="POST" action="/auth/google/completar">
+      <div class="campo">
+        <label for="username">Nombre de usuario</label>
+        <input id="username" name="username" type="text" required minlength="4" maxlength="20" pattern="[A-Za-z0-9_.-]{4,20}" value="<%= valores.username || '' %>">
+      </div>
+      <div class="campo">
+        <label for="fecha">Fecha de nacimiento</label>
+        <input id="fecha" name="fecha_nacimiento" type="date" required min="<%= fechaNacimientoMinima() %>" max="<%= fechaNacimientoMaxima() %>" value="<%= valores.fecha_nacimiento || '' %>">
+        <small class="ayuda-campo">La usamos para mostrarte (o no) el contenido +18.</small>
+      </div>
+      <div class="contenedor-roles">
+        <label class="btn-rol"><input type="radio" name="rol" value="Lector" <%= valores.rol !== 'Creador' ? 'checked' : '' %>><span class="rol-indicador lector">L</span><span>Lector</span></label>
+        <label class="btn-rol"><input type="radio" name="rol" value="Creador" <%= valores.rol === 'Creador' ? 'checked' : '' %>><span class="rol-indicador creador">C</span><span>Creador</span></label>
+      </div>
+      <button type="submit" class="btn-morado">Crear mi cuenta</button>
+    </form>
+  </div>
+</div>
+<%- include('../partials/scripts') %>
+</body>
+</html>

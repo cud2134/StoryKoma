@@ -1,0 +1,41 @@
+<%- include('../partials/head') %>
+<main class="pantalla-baneo">
+  <section class="tarjeta-baneo">
+    <a class="logo logo-baneo" href="/inicio">Story<span>Koma</span></a>
+    <p class="etiqueta-baneo">Acceso restringido</p>
+    <h1>Tu cuenta esta baneada</h1>
+    <p>Revisa los detalles de la sancion. Puedes enviar una apelacion para solicitar una revision.</p>
+
+    <% if (flash) { %><div class="aviso <%= flash.tipo === 'error' ? 'aviso-error' : 'aviso-ok' %>"><%= flash.texto %></div><% } %>
+
+    <dl class="datos-baneo">
+      <div><dt>ID del usuario baneado</dt><dd><%= baneo.usuarioId %></dd></div>
+      <div><dt>Administrador</dt><dd><%= baneo.administrador || 'No disponible' %></dd></div>
+      <div><dt>Motivo</dt><dd><%= baneo.motivo %></dd></div>
+      <div><dt>Fecha y hora del baneo</dt><dd><%= fechaHora(baneo.fechaBaneo) %></dd></div>
+      <div><dt>Duracion</dt><dd><%= baneo.duracionDias %> dias y <%= baneo.duracionHoras %> horas</dd></div>
+      <div><dt>Desbloqueo</dt><dd><%= fechaHora(baneo.fechaDesbloqueo) %></dd></div>
+    </dl>
+
+    <% if (baneo.estadoApelacion === 'No enviada') { %>
+      <form method="POST" action="/ban/apelar" class="form-apelacion">
+        <h2>Solicitar una apelacion</h2>
+        <label for="mensaje-apelacion">Explica por que solicitas el desbaneo anticipado</label>
+        <textarea id="mensaje-apelacion" name="mensaje" maxlength="1000" required></textarea>
+        <button class="btn-accion-principal">Enviar apelacion</button>
+      </form>
+    <% } else { %>
+      <section class="estado-apelacion-usuario">
+        <h2>Estado de tu apelacion: <%= baneo.estadoApelacion %></h2>
+        <% if (baneo.apelacion) { %><p><strong>Tu mensaje:</strong> <%= baneo.apelacion %></p><% } %>
+        <% if (baneo.respuestaApelacion) { %><p><strong>Mensaje del equipo:</strong> <%= baneo.respuestaApelacion %></p><% } %>
+        <% if (baneo.estadoApelacion === 'En proceso' && baneo.responsableApelacion) { %><p>La esta revisando <strong><%= baneo.responsableApelacion %></strong>.</p><% } %>
+      </section>
+    <% } %>
+
+    <form method="POST" action="/logout"><button class="btn-blanco">Cerrar sesion</button></form>
+  </section>
+</main>
+<%- include('../partials/scripts') %>
+</body>
+</html>

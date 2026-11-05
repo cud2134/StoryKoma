@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title + ' · StoryKoma' : 'StoryKoma' %></title>
+  <link rel="stylesheet" href="/vendor/remixicon/remixicon.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <script>
+    // Aplica el tema guardado (oscuro / claro) antes de pintar la pagina
+    try { document.documentElement.setAttribute('data-tema', localStorage.getItem('storykoma.tema') === 'claro' ? 'claro' : 'oscuro'); } catch (e) {}
+  </script>
+</head>
+<body class="<%= typeof bodyClass !== 'undefined' ? bodyClass : '' %>" data-anuncio-inicial="<%= typeof mostrarAnuncioInicial !== 'undefined' && mostrarAnuncioInicial ? 'true' : 'false' %>">

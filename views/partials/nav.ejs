@@ -1,0 +1,18 @@
+<header class="barra-navegacion">
+  <div class="bloque-izquierdo-nav">
+    <a class="logo" href="/inicio">Story<span>Koma</span></a>
+    <a class="foto-perfil-nav" href="/perfil" style="background-image:url('<%= urlCss(avatarDe(user)) %>')" title="Mi perfil" aria-label="Mi perfil"></a>
+    <a class="btn-icono-nav" href="/buscar" title="Buscar mangas" aria-label="Buscar mangas"><i class="ri-search-line icono-remix" aria-hidden="true"></i></a>
+    <a class="btn-nav-fisico<%= rutaActual.startsWith('/fisico') ? ' activo' : '' %>" href="/fisico" title="Donde comprar manga fisico"><i class="ri-book-2-line icono-remix" aria-hidden="true"></i> Fisico</a>
+    <% if (user.esAdulto) { %>
+      <% const _enAdulto = locals.zona === 'adulto'; %>
+      <a class="btn-adulto-nav<%= _enAdulto ? ' activo' : '' %>" href="<%= _enAdulto ? '/inicio' : '/inicio?zona=adulto' %>"><%= _enAdulto ? 'Inicio' : '+18' %></a>
+    <% } %>
+  </div>
+  <div class="bloque-derecho-nav">
+    <% if (user.esAdmin) { %><a class="btn-icono-nav" href="/admin" title="Panel de administrador" aria-label="Administrador"><i class="ri-shield-user-line icono-remix" aria-hidden="true"></i></a><% } %>
+    <% if (!user.esAdmin) { %><a class="btn-premium-nav<%= user.premiumActivo ? ' activo' : '' %>" href="/premium"><i class="ri-vip-crown-line icono-remix" aria-hidden="true"></i> <%= user.premiumActivo ? 'Premium' : 'Mejorar plan' %></a><% } %>
+    <button type="button" class="btn-icono-nav nav-tema" data-tema-toggle title="Cambiar tema" aria-label="Cambiar tema"><i class="ri-sun-line icono-remix" aria-hidden="true"></i></button>
+    <a class="btn-icono-nav nav-notif" href="/notificaciones" title="Notificaciones" aria-label="<%= notificacionesSinLeer > 0 ? `${notificacionesSinLeer} notificaciones sin leer o pendientes` : 'Notificaciones' %>"><i class="ri-notification-3-line icono-remix" aria-hidden="true"></i><% if (notificacionesSinLeer > 0) { %><span class="punto-notif" aria-hidden="true"><%= notificacionesSinLeer %></span><% } %></a>
+  </div>
+</header>

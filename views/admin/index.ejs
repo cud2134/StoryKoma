@@ -1,0 +1,245 @@
+<%- include('../partials/pagina-top') %>
+<h1 class="titulo-pagina"><i class="ri-shield-user-line icono-remix" aria-hidden="true"></i> Panel de administrador</h1>
+<nav class="pestanas-biblioteca">
+  <a href="/admin?tab=usuarios" class="pestana<%= tab === 'usuarios' ? ' activa' : '' %>">Usuarios</a>
+  <a href="/admin?tab=denuncias" class="pestana<%= tab === 'denuncias' ? ' activa' : '' %>">Denuncias <% if (pendientes > 0) { %><span class="contador alerta"><%= pendientes %></span><% } %></a>
+  <a href="/admin?tab=apelaciones" class="pestana<%= tab === 'apelaciones' ? ' activa' : '' %>">Apelaciones <% if (apelacionesPendientes > 0) { %><span class="contador alerta"><%= apelacionesPendientes %></span><% } %></a>
+</nav>
+
+<% if (tab === 'usuarios') { %>
+  <form method="GET" action="/admin" class="busqueda-admin">
+    <input type="hidden" name="tab" value="usuarios">
+    <label for="buscar-usuario">Buscar por ID, nombre o alias</label>
+    <div class="busqueda-admin-campo">
+      <input id="buscar-usuario" name="q" value="<%= busqueda %>" maxlength="80" placeholder="ID, nombre de usuario o correo">
+      <button class="btn-accion-principal">Buscar</button>
+    </div>
+  </form>
+
+  <% if (usuarioSeleccionado) { %>
+    <section class="admin-ficha-grid">
+      <article class="admin-perfil panel">
+        <img src="<%= avatarDe(usuarioSeleccionado) %>" alt="Foto de perfil de <%= usuarioSeleccionado.username %>">
+        <h2><%= usuarioSeleccionado.username %></h2>
+        <p><span class="chip rol-<%= usuarioSeleccionado.rol.toLowerCase() %>"><%= usuarioSeleccionado.rol %></span></p>
+        <p><strong>Fecha de nacimiento</strong><br><%= fecha(usuarioSeleccionado.fechaNacimiento) %></p>
+        <p><strong>Alias</strong><br><%= usuarioSeleccionado.username %></p>
+      </article>
+      <div class="tabla-contenedor admin-datos">
+        <table class="tabla">
+          <tbody>
+            <tr><th>Tipo de usuario</th><td><%= usuarioSeleccionado.rol %></td></tr>
+            <tr><th>Estado</th><td><%= usuarioSeleccionado.estado %></td></tr>
+            <tr><th>Cantidad de obras</th><td><%= usuarioSeleccionado.totalMangas %></td></tr>
+            <tr><th>Fecha de registro</th><td><%= fecha(usuarioSeleccionado.fechaRegistro) %></td></tr>
+            <tr><th>ID del usuario</th><td><%= usuarioSeleccionado.id %></td></tr>
+            <tr><th>Correo electronico</th><td><%= usuarioSeleccionado.correo %></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <section class="admin-acciones panel">
+        <h2>Acciones del administrador</h2>
+        <% if (usuarioSeleccionado.id === user.id) { %>
+          <p class="mensaje-vacio">No puedes modificar cuentas de administradores ni tu propia cuenta.</p>
+        <% } else if (usuarioSeleccionado.esAdmin && esAdministradorPrincipal) { %>
+          <form method="POST" action="/admin/usuarios/<%= usuarioSeleccionado.id %>/rol" class="admin-form-accion">
+            <label for="rol-usuario">Quitar rol de administrador</label>
+            <select id="rol-usuario" name="rol">
+              <option value="Creador">Creador</option>
+              <option value="Lector">Lector</option>
+            </select>
+            <button class="btn-obra-opt">Cambiar tipo</button>
+          </form>
+        <% } else if (usuarioSeleccionado.esAdmin) { %>
+          <p class="mensaje-vacio">Solo la cuenta admin (admin@storykoma.cl) puede quitar el rol de administrador.</p>
+        <% } else { %>
+          <form method="POST" action="/admin/usuarios/<%= usuarioSeleccionado.id %>/rol" class="admin-form-accion">
+            <label for="rol-usuario">Cambiar tipo de usuario</label>
+            <select id="rol-usuario" name="rol">
+              <option value="Administrador" <%= usuarioSeleccionado.rol === 'Administrador' ? 'selected' : '' %>>Administrador</option>
+              <option value="Creador" <%= usuarioSeleccionado.rol === 'Creador' ? 'selected' : '' %>>Creador</option>
+              <option value="Lector" <%= usuarioSeleccionado.rol === 'Lector' ? 'selected' : '' %>>Lector</option>
+            </select>
+            <button class="btn-obra-opt">Cambiar tipo</button>
+          </form>
+          <details class="admin-form-accion">
+            <summary class="btn-obra-opt"><i class="ri-alert-line icono-remix" aria-hidden="true"></i> Mandar advertencia</summary>
+            <form method="POST" action="/admin/usuarios/<%= usuarioSeleccionado.id %>/advertir">
+              <textarea name="mensaje" maxlength="250" required placeholder="Mensaje de advertencia"></textarea>
+              <button class="btn-accion-principal">Enviar advertencia</button>
+            </form>
+          </details>
+          <% if (usuarioSeleccionado.estado === 'Baneado') { %>
+            <div class="admin-baneo-activo">
+              <% if (baneoSeleccionado) { %>
+                <p><strong>Motivo:</strong> <%= baneoSeleccionado.motivo %></p>
+                <p><strong>Desbloqueo:</strong> <%= fechaHora(baneoSeleccionado.fechaDesbloqueo) %></p>
+              <% } %>
+              <form method="POST" action="/admin/usuarios/<%= usuarioSeleccionado.id %>/desban" data-confirm="¿Quitar el baneo de <%= usuarioSeleccionado.username %>?">
+                <button class="btn-obra-opt">Quitar baneo</button>
+              </form>
+            </div>
+          <% } else { %>
+            <details class="admin-form-accion">
+              <summary class="btn-obra-opt btn-peligro"><i class="ri-forbid-line icono-remix" aria-hidden="true"></i> Banear usuario</summary>
+              <form method="POST" action="/admin/usuarios/<%= usuarioSeleccionado.id %>/ban">
+                <label for="motivo-baneo">Motivo del baneo</label>
+                <textarea id="motivo-baneo" name="motivo" maxlength="255" required placeholder="Explica brevemente el motivo"></textarea>
+                <div class="duracion-baneo">
+                  <label>Dias <input name="dias" type="number" min="0" max="3650" value="1" required></label>
+                  <label>Horas <input name="horas" type="number" min="0" max="23" value="0" required></label>
+                </div>
+                <button class="btn-accion-principal">Confirmar baneo</button>
+              </form>
+            </details>
+          <% } %>
+          <form method="POST" action="/admin/usuarios/<%= usuarioSeleccionado.id %>?_method=DELETE" data-confirm="¿Eliminar a <%= usuarioSeleccionado.username %> y todas sus obras?">
+            <button class="btn-obra-opt btn-peligro">Eliminar usuario y obras</button>
+          </form>
+        <% } %>
+      </section>
+    </section>
+
+    <h2 class="subtitulo-admin">Mangas de <%= usuarioSeleccionado.username %> (<%= mangasUsuario.length %>)</h2>
+    <% if (!mangasUsuario.length) { %>
+      <p class="mensaje-vacio">Este usuario aun no ha publicado mangas.</p>
+    <% } else { %>
+      <div class="tabla-contenedor">
+        <table class="tabla">
+          <thead><tr><th>Obra</th><th>Estado</th><th>Visibilidad</th><th>Acciones</th></tr></thead>
+          <tbody>
+            <% mangasUsuario.forEach((m) => { %>
+              <tr>
+                <td><a href="/mangas/<%= m.id %>"><strong><%= m.titulo %></strong></a><br><small><%= m.tipo %> · <%= m.totalCapitulos %> cap.<%= m.esMas18 ? ' · +18' : '' %></small></td>
+                <td><%= m.estado %></td>
+                <td><%= m.visibilidad %></td>
+                <td class="celda-acciones">
+                  <form method="POST" action="/admin/mangas/<%= m.id %>/visibilidad">
+                    <input type="hidden" name="volver" value="usuarios">
+                    <input type="hidden" name="usuario" value="<%= usuarioSeleccionado.id %>">
+                    <input type="hidden" name="visibilidad" value="<%= m.visibilidad === 'Oculto' ? 'Publicado' : 'Oculto' %>">
+                    <button class="btn-obra-opt"><%= m.visibilidad === 'Oculto' ? 'Publicar' : 'Ocultar' %></button>
+                  </form>
+                  <form method="POST" action="/mangas/<%= m.id %>?_method=DELETE" data-confirm="¿Eliminar «<%= m.titulo %>»?"><button class="btn-obra-opt btn-peligro" title="Eliminar manga" aria-label="Eliminar <%= m.titulo %>"><i class="ri-delete-bin-line icono-remix" aria-hidden="true"></i></button></form>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  <% } %>
+
+  <% if (!usuarios.length) { %>
+    <p class="mensaje-vacio">No hay usuarios que coincidan con la busqueda.</p>
+  <% } else { %>
+    <h2 class="subtitulo-admin">Resultados de busqueda (<%= usuarios.length %>)</h2>
+    <div class="tabla-contenedor">
+    <table class="tabla">
+      <thead><tr><th>ID</th><th>Usuario / alias</th><th>Correo</th><th>Tipo</th><th>Estado</th><th>Obras</th><th>Registro</th><th>Ficha</th></tr></thead>
+      <tbody>
+        <% usuarios.forEach((u) => { %>
+          <tr>
+            <td><%= u.id %></td>
+            <td><strong><%= u.username %></strong></td>
+            <td><%= u.correo %></td>
+            <td><span class="chip rol-<%= u.rol.toLowerCase() %>"><%= u.rol %></span></td>
+            <td><% if (u.estado === 'Baneado') { %><i class="ri-forbid-line icono-remix" aria-hidden="true"></i> Baneado<% } else { %>Activo<% } %></td>
+            <td><%= u.totalMangas %></td>
+            <td><%= fecha(u.fechaRegistro) %></td>
+            <td><a class="btn-obra-opt" href="/admin?tab=usuarios&q=<%= encodeURIComponent(busqueda) %>&usuario=<%= u.id %>">Ver ficha</a></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    </div>
+  <% } %>
+<% } %>
+
+<% if (tab === 'denuncias') { %>
+  <% if (!denuncias.length) { %><p class="mensaje-vacio"><i class="ri-check-line icono-remix" aria-hidden="true"></i> No hay denuncias.</p><% } else { %>
+    <div class="tabla-contenedor">
+      <table class="tabla">
+        <thead><tr><th>Obra</th><th>Motivo</th><th>Denunciante</th><th>Estado</th><th>Acciones</th></tr></thead>
+        <tbody>
+          <% denuncias.forEach((d) => { %>
+            <tr>
+              <td><a href="/mangas/<%= d.idManga %>"><strong><%= d.manga %></strong></a><br><small>de <%= d.creador %> · <%= d.visibilidad %></small></td>
+              <td><%= d.motivo %><% if (d.detalle) { %><br><small><%= d.detalle %></small><% } %><br><small><%= hace(d.fecha) %></small></td>
+              <td><%= d.denunciante %></td>
+              <td><span class="chip estado-denuncia-<%= d.estado.toLowerCase() %>"><%= d.estado %></span></td>
+              <td class="celda-acciones">
+                <form method="POST" action="/admin/denuncias/<%= d.id %>/estado" class="form-en-linea">
+                  <select name="estado"><% estadosDenuncia.forEach((e) => { %><option value="<%= e %>" <%= d.estado === e ? 'selected' : '' %>><%= e %></option><% }) %></select>
+                  <button class="btn-obra-opt">Guardar</button>
+                </form>
+                <form method="POST" action="/admin/mangas/<%= d.idManga %>/visibilidad">
+                  <input type="hidden" name="volver" value="denuncias">
+                  <input type="hidden" name="visibilidad" value="<%= d.visibilidad === 'Oculto' ? 'Publicado' : 'Oculto' %>">
+                  <button class="btn-obra-opt"><%= d.visibilidad === 'Oculto' ? 'Publicar obra' : 'Ocultar obra' %></button>
+                </form>
+                <form method="POST" action="/admin/usuarios/<%= d.idCreador %>/advertir" class="form-en-linea">
+                  <input type="hidden" name="mensaje" value="Tu obra «<%= d.manga %>» fue denunciada (<%= d.motivo %>). Revisala.">
+                  <button class="btn-obra-opt"><i class="ri-alert-line icono-remix" aria-hidden="true"></i> Advertir al creador</button>
+                </form>
+                <form method="POST" action="/admin/denuncias/<%= d.id %>?_method=DELETE" data-confirm="¿Eliminar esta denuncia?">
+                  <button class="btn-obra-opt btn-peligro"><i class="ri-delete-bin-line icono-remix" aria-hidden="true"></i> Eliminar denuncia</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+<% } %>
+
+<% if (tab === 'apelaciones') { %>
+  <% if (!apelaciones.length) { %><p class="mensaje-vacio">No hay apelaciones registradas.</p><% } else { %>
+    <div class="tabla-contenedor">
+      <table class="tabla">
+        <thead><tr><th>Usuario</th><th>Fechas del baneo</th><th>Apelacion</th><th>Estado</th><th>Gestion</th></tr></thead>
+        <tbody>
+          <% apelaciones.forEach((a) => { %>
+            <tr>
+              <td><strong><%= a.usuario %></strong><br><small>ID <%= a.usuarioId %></small></td>
+              <td><small>Bloqueado:</small><br><%= fechaHora(a.fechaBaneo) %><br><small>Desbloqueo:</small><br><%= fechaHora(a.fechaDesbloqueo) %></td>
+              <td><%= a.mensaje %><% if (a.respuesta) { %><br><small>Mensaje enviado: <%= a.respuesta %></small><% } %></td>
+              <td><span class="chip estado-apelacion-<%= a.estado.toLowerCase().replace(' ', '-') %>"><%= a.estado %></span>
+                <% if (a.estado === 'En proceso') { %><br><small>Responsable: <%= a.administrador || 'No disponible' %></small><% } %>
+              </td>
+              <td class="celda-acciones apelacion-acciones">
+                <% if (a.estado === 'Pendiente') { %>
+                  <form method="POST" action="/admin/apelaciones/<%= a.id %>/proceso">
+                    <label>Mensaje para avisar que esta en proceso</label>
+                    <textarea name="mensaje" maxlength="200" required placeholder="Estamos revisando tu solicitud"></textarea>
+                    <button class="btn-accion-principal">Tomar apelacion</button>
+                  </form>
+                <% } else if (a.estado === 'En proceso' && a.administrador === user.username) { %>
+                  <form method="POST" action="/admin/apelaciones/<%= a.id %>/resolver">
+                    <label for="estado-apelacion-<%= a.id %>">Resolucion</label>
+                    <select id="estado-apelacion-<%= a.id %>" name="estado">
+                      <option value="Aprobada">Aceptar</option>
+                      <option value="Rechazada">Rechazar</option>
+                    </select>
+                    <textarea name="mensaje" maxlength="200" required placeholder="Explica brevemente el motivo"></textarea>
+                    <button class="btn-accion-principal">Enviar resolucion</button>
+                  </form>
+                <% } else if (a.estado === 'En proceso') { %>
+                  <small>La gestiona <%= a.administrador || 'otro administrador' %>.</small>
+                <% } else { %>
+                  <small>Solicitud resuelta.</small>
+                <% } %>
+                <form method="POST" action="/admin/apelaciones/<%= a.id %>?_method=DELETE" data-confirm="¿Eliminar esta apelacion? El baneo del usuario se mantendra.">
+                  <button class="btn-obra-opt btn-peligro"><i class="ri-delete-bin-line icono-remix" aria-hidden="true"></i> Eliminar apelacion</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+<% } %>
+
+<%- include('../partials/pagina-bottom') %>
